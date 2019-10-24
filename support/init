@@ -12,6 +12,28 @@
 #
 # ----------------------------------------------------------------------------------------
 
+
+#-----------------------------------------------------------------------------------------
+# HELPER FUNCTIONS
+# ----------------------------------------------------------------------------------------
+
+urlencode () {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo ${encoded}
+}
+
 #----------------------------------------------------------------------------------------
 # CHECK DEPENDENCES
 # ----------------------------------------------------------------------------------------
@@ -105,6 +127,10 @@ if [ -f $MQTT_CONFIG ] ; then
 		printf "%s\n" "${ORANGE}> warning:${NC} operating in anonymous and unprotected mode for mqtt broker at $mqtt_address"
 	
 	else 
+		#URL ENCODE USERNAME/PASSWORD
+		mqtt_user=$(urlencode $mqtt_user)
+		mqtt_password=$(urlencode $mqtt_password)
+
 		#PREPEND COLON FOR FULL URL PROCESSING
 		mqtt_password=":$mqtt_password@"
 	fi
